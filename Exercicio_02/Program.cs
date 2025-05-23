@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography.X509Certificates;
 
 namespace Exercicio_02;
 
@@ -13,7 +14,7 @@ class Program
         for (int i = 0; i < 3; i++)
         {
             Console.Clear();
-            Console.WriteLine($"Cadastro do {i}º Produto");
+            Console.WriteLine($"Cadastro do {i + 1}º Produto");
             Console.Write("Digite o nome do produto: ");
             string nameProduct = Console.ReadLine();
 
@@ -72,23 +73,29 @@ class Program
                                 Console.WriteLine($"{obj.Key} = {obj.Value}");
                             }
                         }
+                        Console.WriteLine();
                     }
                     Console.Write("Escolha uma das opções: ");
                     string inputUser = Console.ReadLine();
                     int valueIdList = IsValidInt(inputUser);
-                    if (list.Exists(x => x.Values.Equals(valueIdList)))
+                    if (list.Exists(x => x["Id"].Equals(valueIdList)))
                     {
-                        var productBuy = list.Find(x => x.Values.Equals(valueIdList));
+                        var productBuy = list.Find(x => x["Id"].Equals(valueIdList));
                         Console.Write("Informe a quantidade que deseja retirar: ");
                         int quantityBuy = IsValidInt(Console.ReadLine());
-                        if ((int)productBuy["Quantidade"] <= quantityBuy)
+
+                        var quantityProductBuy = productBuy.First(x => x.Key == "Quantidade");
+                        int quantityProductStock = (int)quantityProductBuy.Value;
+                        if (quantityProductStock >= quantityBuy)
                         {
+                            productBuy["Quantidade"] = quantityProductStock - quantityBuy;
                             Console.WriteLine("Compra realizada com sucesso!");
-                            Console.WriteLine($"{productBuy["Quantidade"]}");
+                            await Task.Delay(2000);
                         }
                         else
                         {
                             Console.WriteLine("Quantidade superior a capacidade de estoque");
+                            await Task.Delay(2000);
                         }
                     }
                     else
@@ -98,6 +105,45 @@ class Program
                     }
                     break;
                 case "2":
+                    Console.Clear();
+                    Console.WriteLine("==== MENU REABASTECIMENTO ====");
+                    foreach (var item in list)
+                    {
+                        foreach (var obj in item)
+                        {
+                            if (obj.Key.Equals("Id"))
+                            {
+                                Console.WriteLine($"Opção - [{obj.Value}]");
+                            }
+                            else
+                            {
+                                Console.WriteLine($"{obj.Key} = {obj.Value}");
+                            }
+                        }
+                        Console.WriteLine();
+                    }
+                    Console.Write("Escolha uma das opções: ");
+                    string inputUser2 = Console.ReadLine();
+                    int valueIdList2 = IsValidInt(inputUser2);
+                    if (list.Exists(x => x["Id"].Equals(valueIdList2)))
+                    {
+                        var productStock = list.Find(x => x["Id"].Equals(valueIdList2));
+                        Console.Write("Informe a quantidade que deseja abastecer: ");
+                        int quantityStockAdd = IsValidInt(Console.ReadLine());
+                        var objQuantidadeStockProduct = productStock.First(x => x.Key == "Quantidade");
+                        int quantidadeStockProduct = (int)objQuantidadeStockProduct.Value;
+
+                        productStock["Quantidade"] = quantidadeStockProduct + quantityStockAdd;
+
+                        Console.WriteLine("Estoque adicionado com sucesso!");
+                        await Task.Delay(2000);
+
+                    }
+                    else
+                    {
+                        Console.WriteLine("Não existe esse produto no nosso estoque!");
+                        await Task.Delay(2000);
+                    }
                     break;
                 case "3":
                     exit = true;
@@ -108,9 +154,12 @@ class Program
                     break;
             }
 
-
         }
+
+        Console.Clear();
+        Console.WriteLine("Obrigado por usar o programa!");
         
+    }
         static int IsValidInt(string inputUser)
         {
             bool sucess = int.TryParse(inputUser, out int validNumber);
@@ -122,5 +171,4 @@ class Program
             }
             return validNumber;
         }
-    }
 }
