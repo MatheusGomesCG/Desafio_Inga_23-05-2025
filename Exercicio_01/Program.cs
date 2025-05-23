@@ -60,8 +60,9 @@ class Program
         bool sucess = int.TryParse(inputUser, out int age);
         while (!sucess || age < 18)
         {
-            Console.Write("Digite uma data superior a 18: ");
+            Console.Write("Digite uma idade superior a 18: ");
             inputUser = Console.ReadLine();
+            sucess = int.TryParse(inputUser, out age);
         }
         return $"{age} anos";
     }
